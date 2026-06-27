@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện Quản lý Nội bộ - Tích hợp Hệ thống Giám sát IP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./style-index.css">
+</head>
+<body>
+
+    <header>
+        <div class="top-left">
+            <div class="brand">OA</div>
+            <ul class="main-menu" id="topMenuBar">
+                <li class="active" data-page="home"><i class="fa-solid fa-user-tie"></i> Văn phòng cá nhân</li>
+                <li>Quy trình</li>
+                <li>Tải nguyên nhiệm vụ</li>
+                <li>Công văn</li>
+                <li>Khách hàng</li>
+                <li>Nhân sự & chấm công</li>
+                <li>Hành chính</li>
+                <li>Tài chính</li>
+                <li>Mô-đun quy trình</li>
+                <li>Hệ thống</li>
+            </ul>
+        </div>
+        <div class="top-right">
+            <span><i class="fa-solid fa-mobile-screen"></i> Phiên bản di động</span>
+            <span><i class="fa-solid fa-rotate"></i> REIM</span>
+            <span class="user-display" id="userAccountName"><i class="fa-solid fa-circle-user"></i> Khách</span>
+            <button class="btn-admin-login" id="adminBtn" onclick="toggleAdminMode()"><i class="fa-solid fa-lock"></i> Đăng nhập Admin</button>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <aside>
+            <div class="sidebar-title">
+                <span><i class="fa-solid fa-folder"></i> Văn phòng cá nhân</span>
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <ul class="sidebar-menu" id="sideMenuBar">
+                <li data-page="home"><i class="fa-solid fa-user"></i> Trung tâm cá nhân</li>
+                <li><i class="fa-solid fa-envelope"></i> Email</li>
+                <li><i class="fa-solid fa-bell"></i> Thông báo</li>
+                <li><i class="fa-solid fa-calendar-days"></i> Lịch trình</li>
+                <li><i class="fa-solid fa-file-invoice"></i> Xem chứng từ</li>
+                <li><i class="fa-solid fa-star"></i> Kiểm kê thiết bị</li>
+                <li><i class="fa-solid fa-pen-to-square"></i> Đăng ký & hỏi báo</li>
+                <li><i class="fa-solid fa-users"></i> Cuộc họp</li>
+                <li><i class="fa-solid fa-user-check"></i> Chấm công của tôi</li>
+                <li><i class="fa-solid fa-chart-bar"></i> Báo cáo công việc</li>
+            </ul>
+        </aside>
+
+        <main>
+            <div class="breadcrumb"><i class="fa-solid fa-house"></i> Trang nhất</div>
+
+            <div class="status-grid" id="statusBoxGrid">
+                <div class="status-box bg-blue">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Chờ xử lý</span>
+                </div>
+                <div class="status-box bg-orange">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Thông báo & Nhắc nhở</span>
+                </div>
+                <div class="status-box bg-blue-light">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Quản lý người dùng</span>
+                </div>
+                <div class="status-box bg-green">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Nhiệm vụ tôi chưa hoàn thành</span>
+                </div>
+		<div class="status-box bg-green-light">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Kiểm kê thiêt bị</span>
+                </div>
+                <div class="status-box bg-red">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Giám sát chứng từ bất thường</span>
+                </div>
+                <div class="status-box bg-grey" data-skip="true">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span id="countdown-text">132s sau sẽ làm mới &gt;&gt;</span>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <div class="column">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-volume-high"></i> Thông báo và Thông báo</span>
+                            <a href="#">Hơn &gt;&gt;</a>
+                        </div>
+                        <div class="card-body" style="min-height: 80px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-pen"></i> Ghi chú <button class="btn-add-note">+ Thêm mới</button></span>
+                            <a href="#">Hơn &gt;&gt;</a>
+                        </div>
+                        <div class="card-body container-calendar-flex">
+                            <div class="calendar-box-left">
+                                <div class="calendar-title" id="calendar-month-year">« -- »</div>
+                                <div class="calendar-grid" id="calendar-days-container"></div>
+                            </div>
+                            <div class="calendar-note-right">
+                                Không có nội dung ghi chú
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="card">
+                        <div class="card-header">
+                            <span id="app-title-count"><i class="fa-solid fa-cubes"></i> Ứng dụng của tôi (0)</span>
+                            <div>
+                                <button class="btn-add-inline" id="btnAddApp" onclick="addNewApp()"><i class="fa-solid fa-plus"></i> Thêm link</button>
+                                <a href="#">Hơn &gt;&gt;</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="app-list" id="dynamic-app-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-flag"></i> Cuộc họp hôm nay</span>
+                            <a href="#">Hơn &gt;&gt;</a>
+                        </div>
+                        <div class="card-body" id="zoom-box-body"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-network-wired"></i> Giám sát thiết bị mạng Mạng</span>
+                            <div>
+                                <button class="btn-add-inline" id="btnAddDevice" onclick="addNewDevice()"><i class="fa-solid fa-plus"></i> Thêm thiết bị</button>
+                                <a href="page2.html">Hơn &gt;&gt;</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="monitor-container" id="network-monitor-list">
+                                </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-globe"></i> Tin tức</span>
+                            <a href="#">Hơn &gt;&gt;</a>
+                        </div>
+                        <div class="card-body">
+                            <span style="margin-right: 15px; color:#b31f24; font-weight:bold;">tin tức</span>
+                            <span style="margin-right: 15px;">Thông tin</span>
+                            <span>Thông tin an ninh</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span id="login-stats-title">Thống kê đăng nhập</span>
+                        </div>
+                        <div class="card-body" style="min-height: 60px;"></div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-clock"></i> Điểm danh</span>
+                            <a href="#" style="color: #b31f24;">Phiếu điểm danh &gt;&gt;</a>
+                        </div>
+                        <div class="card-body attendance-flex">
+                            <div class="attendance-left">
+                                <div class="time-box" id="live-clock">--:--:--</div>
+                                <div class="date-box" id="live-date">----(--)</div>
+                                <button class="btn-checkin">Chưa chấm lần 1</button>
+                                <button class="btn-refresh" onclick="location.reload()">Làm mới</button>
+                            </div>
+                            <div class="attendance-right">
+                                <div class="info-title">Chấm công hôm nay:</div>
+                                <div class="info-row">
+                                    <span>đi làm (07:30 → 12:00):</span>
+                                    <span class="red-text">Không chấm công</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>tan làm (13:00 → 16:30):</span>
+                                    <span class="red-text">Không chấm công</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-terminal"></i> Nhật ký hệ thống</span>
+                            <a href="#">Hơn &gt;&gt;</a>
+                        </div>
+                        <div class="card-body" id="system-log-container"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "admin123";
+        let isAdminLoggedIn = false;
+
+        const defaultApps = [
+            { id: 1, name: "Samsung Web", url: "https://drive.google.com/file/d/1p1IpsgRma0qmDIkGnXSBBSvFreFlr8zP/view?usp=drive_link" },
+            { id: 2, name: "Quản Lý File", url: "https://drive.google.com/file/d/1yxfTzAG9sZS3XxGycpQq07qgWiQ4dDbw/view?usp=drive_link" },
+            { id: 3, name: "Fing", url: "#" }
+        ];
+        const defaultZoom = "https://us05web.zoom.us/j/86123494393?pwd=rsIi55FX2PtFYkIjeiVX3SCcIVC0wS.1";
+
+        // Tạo dữ liệu thiết bị mạng mặc định
+        const defaultDevices = [
+            { id: 1, name: "Camera Cổng Chính", ip: "192.168.120.50", type: "camera", status: "online" },
+            { id: 2, name: "Camera Phòng Làm Việc", ip: "192.168.120.51", type: "camera", status: "online" },
+            { id: 3, name: "Switch Cisco Tầng 1", ip: "192.168.120.10", type: "switch", status: "offline" }
+        ];
+
+        if (!localStorage.getItem("app_database")) {
+            localStorage.setItem("app_database", JSON.stringify(defaultApps));
+        }
+        if (!localStorage.getItem("zoom_link")) {
+            localStorage.setItem("zoom_link", defaultZoom);
+        }
+        if (!localStorage.getItem("device_database")) {
+            localStorage.setItem("device_database", JSON.stringify(defaultDevices));
+        }
+
+        function toggleAdminMode() {
+            const userTarget = document.getElementById("userAccountName");
+            const btnAdmin = document.getElementById("adminBtn");
+
+            if (!isAdminLoggedIn) {
+                let pass = prompt("Vui lòng nhập Mật mã Quản trị viên để chỉnh sửa dữ liệu:");
+                if (pass === ADMIN_PASSWORD) {
+                    isAdminLoggedIn = true;
+                    userTarget.innerHTML = '<i class="fa-solid fa-user-shield"></i> Nguyễn Đình Hiếu';
+                    userTarget.style.background = 'rgba(74, 222, 128, 0.2)';
+                    btnAdmin.innerHTML = '<i class="fa-solid fa-unlock"></i> Thoát Admin';
+                    btnAdmin.style.backgroundColor = "#25a162";
+                    btnAdmin.style.color = "white";
+                    alert("Đăng nhập quản trị thành công!");
+                } else if (pass !== null) {
+                    alert("Sai mật mã! Không thể bật tính năng quản trị.");
+                }
+            } else {
+                isAdminLoggedIn = false;
+                userTarget.innerHTML = '<i class="fa-solid fa-circle-user"></i> Khách';
+                userTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                btnAdmin.innerHTML = '<i class="fa-solid fa-lock"></i> Đăng nhập Admin';
+                btnAdmin.style.backgroundColor = "white";
+                btnAdmin.style.color = "#b31f24";
+            }
+            renderApps();
+            renderZoom();
+            renderDevices();
+        }
+
+        function renderApps() {
+            const apps = JSON.parse(localStorage.getItem("app_database")) || [];
+            document.getElementById("app-title-count").innerHTML = `<i class="fa-solid fa-cubes"></i> Ứng dụng của tôi (${apps.length})`;
+            document.getElementById("btnAddApp").style.display = isAdminLoggedIn ? "inline-block" : "none";
+
+            const container = document.getElementById("dynamic-app-list");
+            container.innerHTML = "";
+
+            if (apps.length === 0) {
+                container.innerHTML = "<div style='color:#999;font-size:12px;text-align:center;padding:10px;'>Chưa có ứng dụng nào</div>";
+                return;
+            }
+
+            apps.forEach(app => {
+                const row = document.createElement("div");
+                row.className = "app-row-wrapper";
+                row.innerHTML = `
+                    <a href="${app.url}" target="_blank" class="app-item">
+                        <i class="fa-brands fa-google-drive"></i>
+                        <span>${app.name}</span>
+                    </a>
+                    <div class="admin-controls" style="display: ${isAdminLoggedIn ? 'flex' : 'none'}">
+                        <button class="btn-action btn-edit" onclick="editApp(${app.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-action btn-delete" onclick="deleteApp(${app.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addNewApp() {
+            const name = prompt("Nhập tên Ứng dụng:");
+            if (!name) return;
+            const url = prompt("Dán đường dẫn link vào đây:");
+            if (!url) return;
+
+            const apps = JSON.parse(localStorage.getItem("app_database")) || [];
+            const newId = apps.length > 0 ? Math.max(...apps.map(a => a.id)) + 1 : 1;
+            
+            apps.push({ id: newId, name: name, url: url });
+            localStorage.setItem("app_database", JSON.stringify(apps));
+            renderApps();
+        }
+
+        function editApp(id) {
+            const apps = JSON.parse(localStorage.getItem("app_database")) || [];
+            const app = apps.find(a => a.id === id);
+            if (!app) return;
+
+            const newName = prompt("Chỉnh sửa tên ứng dụng:", app.name);
+            if (!newName) return;
+            const newUrl = prompt("Chỉnh sửa đường dẫn link:", app.url);
+            if (!newUrl) return;
+
+            app.name = newName;
+            app.url = newUrl;
+            localStorage.setItem("app_database", JSON.stringify(apps));
+            renderApps();
+        }
+
+        function deleteApp(id) {
+            if (confirm("Bạn có chắc chắn muốn xóa ứng dụng này?")) {
+                let apps = JSON.parse(localStorage.getItem("app_database")) || [];
+                apps = apps.filter(a => a.id !== id);
+                localStorage.setItem("app_database", JSON.stringify(apps));
+                renderApps();
+            }
+        }
+
+        function renderZoom() {
+            const currentZoomUrl = localStorage.getItem("zoom_link") || "";
+            const box = document.getElementById("zoom-box-body");
+            box.innerHTML = `
+                <div class="meeting-box-content" style="width: 100%;">
+                    <a href="${currentZoomUrl}" target="_blank" class="meeting-item">
+                        <i class="fa-solid fa-video"></i>
+                        <span>Tham gia Cuộc họp Zoom trực tuyến</span>
+                    </a>
+                    <div class="admin-controls" style="display: ${isAdminLoggedIn ? 'flex' : 'none'}">
+                        <button class="btn-action btn-edit" onclick="changeZoomLink()"><i class="fa-solid fa-pen"></i> Sửa Zoom</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changeZoomLink() {
+            const currentZoomUrl = localStorage.getItem("zoom_link") || "";
+            const newZoom = prompt("Dán đường link phòng học Zoom mới vào đây:", currentZoomUrl);
+            if (newZoom) {
+                localStorage.setItem("zoom_link", newZoom);
+                renderZoom();
+                alert("Đã cập nhật đường dẫn Zoom mới!");
+            }
+        }
+
+        // --- HÀM XỬ LÝ ĐIỀU KHIỂN THIẾT BỊ MẠNG LAN ---
+        function renderDevices() {
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            document.getElementById("btnAddDevice").style.display = isAdminLoggedIn ? "inline-block" : "none";
+            const container = document.getElementById("network-monitor-list");
+            container.innerHTML = "";
+
+            if (devices.length === 0) {
+                container.innerHTML = "<div style='color:#999;font-size:12px;text-align:center;padding:10px;'>Chưa có cấu hình thiết bị</div>";
+                return;
+            }
+
+            devices.forEach(dev => {
+                let iconClass = dev.type === 'camera' ? 'fa-video' : 'fa-server';
+                let statusBadge = dev.status === 'online' ? '<span class="badge-net on">● Online</span>' : '<span class="badge-net off">▲ Offline</span>';
+
+                const row = document.createElement("div");
+                row.className = "monitor-row";
+                row.innerHTML = `
+                    <div class="monitor-info">
+                        <i class="fa-solid ${iconClass} net-icon"></i>
+                        <div>
+                            <div class="net-name">${dev.name}</div>
+                            <div class="net-ip">${dev.ip}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${statusBadge}
+                        <div class="admin-controls" style="display: ${isAdminLoggedIn ? 'flex' : 'none'}">
+                            <button class="btn-action btn-edit" onclick="editDevice(${dev.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteDevice(${dev.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addNewDevice() {
+            const name = prompt("Nhập tên thiết bị (Ví dụ: Camera Nhà Kho):");
+            if (!name) return;
+            const ip = prompt("Nhập địa chỉ IP nội bộ (Ví dụ: 192.168.120.60):");
+            if (!ip) return;
+            const type = prompt("Nhập loại thiết bị ('camera' hoặc 'switch'):").toLowerCase();
+            
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            const newId = devices.length > 0 ? Math.max(...devices.map(d => d.id)) + 1 : 1;
+
+            devices.push({ id: newId, name: name, ip: ip, type: type === 'switch' ? 'switch' : 'camera', status: 'online' });
+            localStorage.setItem("device_database", JSON.stringify(devices));
+            renderDevices();
+        }
+
+        function editDevice(id) {
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            const dev = devices.find(d => d.id === id);
+            if (!dev) return;
+
+            const newName = prompt("Chỉnh sửa tên thiết bị:", dev.name);
+            const newIp = prompt("Chỉnh sửa địa chỉ IP:", dev.ip);
+            if (!newName || !newIp) return;
+
+            dev.name = newName;
+            dev.ip = newIp;
+            localStorage.setItem("device_database", JSON.stringify(devices));
+            renderDevices();
+        }
+
+        let countdown = 132;
+        const countdownText = document.getElementById('countdown-text');
+        setInterval(() => {
+            countdown--;
+            if (countdown < 0) {
+                countdown = 132;
+                // Giả lập quét lại mạng ngẫu nhiên khi bộ đếm giờ chạy hết
+                simulateNetworkScan();
+            }
+            countdownText.innerHTML = `${countdown}s sau sẽ làm mới &gt;&gt;`;
+        }, 1000);
+
+        function simulateNetworkScan() {
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            devices.forEach(d => {
+                // Giả lập thỉnh thoảng có thiết bị mất kết nối ngẫu nhiên để test giao diện
+                d.status = Math.random() > 0.15 ? "online" : "offline";
+            });
+            localStorage.setItem("device_database", JSON.stringify(devices));
+            renderDevices();
+        }
+
+        function deleteDevice(id) {
+            if (confirm("Bạn thực sự muốn xóa thiết bị giám sát này?")) {
+                let devices = JSON.parse(localStorage.getItem("device_database")) || [];
+                devices = devices.filter(d => d.id !== id);
+                localStorage.setItem("device_database", JSON.stringify(devices));
+                renderDevices();
+            }
+        }
+
+        // --- TIỆN ÍCH ĐỒNG HỒ & LỊCH ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            document.getElementById('live-date').textContent = `${year}-${month}-${day}(${daysOfWeek[now.getDay()]})`;
+            
+            const loginTitle = document.getElementById('login-stats-title');
+            if (loginTitle) { loginTitle.textContent = `Thống kê đăng nhập (${year}-${month}-${day})`; }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function generateCalendar() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); 
+            const todayDate = now.getDate();
+            document.getElementById('calendar-month-year').textContent = `« ${currentYear}-${String(currentMonth + 1).padStart(2, '0')} »`;
+
+            const daysContainer = document.getElementById('calendar-days-container');
+            daysContainer.innerHTML = '';
+            const headers = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            headers.forEach(h => {
+                const span = document.createElement('span');
+                span.className = 'day-header'; span.textContent = h;
+                daysContainer.appendChild(span);
+            });
+
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const startDayOfWeek = firstDayOfMonth.getDay(); 
+            const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const totalDaysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+            for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                const span = document.createElement('span');
+                span.className = 'other-month'; span.textContent = totalDaysInPrevMonth - i;
+                daysContainer.appendChild(span);
+            }
+            for (let day = 1; day <= totalDaysInMonth; day++) {
+                const span = document.createElement('span');
+                span.textContent = day;
+                if (day === todayDate) { span.className = 'today'; }
+                daysContainer.appendChild(span);
+            }
+            const totalCellsUsed = startDayOfWeek + totalDaysInMonth;
+            const remainingCells = 42 - totalCellsUsed;
+            for (let day = 1; day <= remainingCells; day++) {
+                const span = document.createElement('span');
+                span.className = 'other-month'; span.textContent = day;
+                daysContainer.appendChild(span);
+            }
+        }
+        generateCalendar();
+
+        function generateLogs() {
+            const now = new Date();
+            const logContainer = document.getElementById('system-log-container');
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            logContainer.innerHTML = `
+                <div class="log-item">
+                    <div>• <b>[user admin]</b> đã đăng nhập trên [pc] lúc: (${dateStr} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:18)</div>
+                </div>
+                <div class="log-item">
+                    <div>• <b>[user admin]</b> đã đăng nhập trên [pc] lúc: (${dateStr} ${String((now.getHours() - 1 + 24) % 24).padStart(2, '0')}:13:48)</div>
+                </div>
+            `;
+        }
+        generateLogs();
+
+        // LOGIC TỰ ĐỘNG CHUYỂN HƯỚNG SANG PAGE1.HTML
+        document.addEventListener("DOMContentLoaded", function() {
+            const topMenuItems = document.querySelectorAll("#topMenuBar li");
+            topMenuItems.forEach(item => {
+                if(!item.hasAttribute('data-page')) {
+                    item.addEventListener("click", function() { window.location.href = "page1.html"; });
+                }
+            });
+
+            const sideMenuItems = document.querySelectorAll("#sideMenuBar li");
+            sideMenuItems.forEach(item => {
+                if(!item.hasAttribute('data-page')) {
+                    item.addEventListener("click", function() { window.location.href = "page1.html"; });
+                }
+            });
+
+            const statusBoxes = document.querySelectorAll("#statusBoxGrid .status-box");
+            statusBoxes.forEach(box => {
+                if(!box.hasAttribute('data-skip')) {
+                    box.addEventListener("click", function() { window.location.href = "page1.html"; });
+                }
+            });
+        });
+
+        renderApps();
+        renderZoom();
+        renderDevices();
+    </script>
+</body>
+</html>

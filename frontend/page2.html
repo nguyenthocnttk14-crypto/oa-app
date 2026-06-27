@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Giám Sát Thiết Bị Mạng - Fixed Menu Layout</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; padding: 20px; }
+        
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #b31f24; }
+        
+        /* HEADER */
+        .page-header { background: #1e293b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title h1 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .page-title p { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+        
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-back { background: #475569; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-auth { background: #b31f24; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-auth.logged { background: #16a34a; }
+
+        /* PING TOOL BLOCK */
+        .ping-tool-section { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid #cbd5e1; }
+        .ping-tool-title { font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .ping-form { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .ping-form input[type="text"] { padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; width: 220px; font-family: monospace; }
+        .ping-form select { padding: 7px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
+        .btn-ping { background: #2563eb; color: white; border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .ping-output { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 4px; min-height: 40px; white-space: pre-line; max-height: 180px; overflow-y: auto; }
+
+        /* ADMIN PANEL */
+        .admin-panel { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: none; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .admin-panel h3 { width: 100%; font-size: 13px; color: #b31f24; margin-bottom: 2px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 11px; font-weight: bold; color: #475569; }
+        .admin-panel input, .admin-panel select { padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; min-width: 160px; }
+        .btn-submit { background: #b31f24; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; height: 32px; margin-top: 16px; }
+
+        /* BỐ CỤC 2 CỘT CHỮA LỖI OVERFLOW */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; background-color: #f8fafc; }
+        @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } } 
+
+        /* CHÚ Ý: Bỏ hoàn toàn overflow:hidden ở đây để tránh đè nén menu */
+        .column-section { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding-bottom: 10px; }
+        .column-header { background: #e2e8f0; padding: 10px 15px; font-size: 13px; font-weight: bold; color: #334155; display: flex; justify-content: space-between; align-items: center; border-radius: 5px 5px 0 0; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: bold; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+        
+        /* Đảm bảo ô dữ liệu có thể chứa nội dung tràn ra ngoài */
+        td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; position: relative; overflow: visible; }
+        
+        .device-meta { display: flex; align-items: center; gap: 8px; }
+        .device-icon { font-size: 14px; color: #64748b; width: 20px; text-align: center; }
+        .badge { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 3px; }
+        .badge.online { background: #dcfce7; color: #15803d; }
+        .badge.offline { background: #fee2e2; color: #b91c1c; }
+
+        /* SỬA ĐỔI QUAN TRỌNG: ĐỊNH VỊ DROPDOWN KHÔNG BỊ KHUẤT */
+        .menu-container { position: relative; display: inline-block; }
+        .btn-trigger { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; width: 34px; height: 28px; border-radius: 4px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-trigger:hover { background: #e2e8f0; color: #000; }
+
+        /* Thêm z-index cao để menu đè lên mọi hàng/bảng bên dưới */
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; margin-top: 5px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); z-index: 9999; min-width: 170px; padding: 5px 0; }
+        .dropdown-menu.show { display: block; animation: fadeIn 0.12s ease-out; }
+
+        .dropdown-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; font-size: 12px; color: #334155; cursor: pointer; text-decoration: none; transition: 0.15s; white-space: nowrap; }
+        .dropdown-item:hover { background: #f1f5f9; color: #000; }
+        .dropdown-item i { width: 16px; text-align: center; font-size: 13px; }
+        
+        .item-webgui { color: #0284c7; }
+        .item-ping { color: #6366f1; }
+        .item-edit { color: #ca8a04; }
+        .item-delete { color: #dc2626; }
+
+        .refresh-status { font-size: 11px; font-style: italic; color: #64748b; background: #cbd5e1; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1><i class="fa-solid fa-network-wired"></i> TRUNG TÂM GIÁM SÁT THIẾT BỊ MẠNG (FIXED)</h1>
+                <p id="total-summary">Đang đồng bộ hóa dữ liệu...</p>
+            </div>
+            <div class="header-actions">
+                <button id="authBtn" class="btn-auth" onclick="handleAuth()"><i class="fa-solid fa-lock"></i> Hệ thống Admin</button>
+                <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+            </div>
+        </div>
+
+        <div class="ping-tool-section">
+            <div class="ping-tool-title"><i class="fa-solid fa-terminal"></i> Trình chẩn đoán Ping gói tin nâng cao</div>
+            <div class="ping-form">
+                <input type="text" id="pingTargetInput" placeholder="Địa chỉ IP thiết bị">
+                <select id="pingCount">
+                    <option value="4">4 gói tin (Mặc định)</option>
+                    <option value="10">10 gói tin</option>
+                    <option value="20">20 gói tin</option>
+                    <option value="50">50 gói tin (Kiểm tra sâu)</option>
+                </select>
+                <button class="btn-ping" onclick="executeManualPing()"><i class="fa-solid fa-play"></i> Bắt đầu test</button>
+            </div>
+            <div class="ping-output" id="pingConsoleOutput">Chọn thiết bị hoặc nhập IP để xem luồng phân tích gói mạng tại đây...</div>
+        </div>
+
+        <div class="admin-panel" id="adminPanel">
+            <h3><i class="fa-solid fa-user-gear"></i> THÊM PHẦN CỨNG MẠNG VÀO HỆ THỐNG</h3>
+            <div class="form-group"><label>Tên thiết bị</label><input type="text" id="devName" placeholder="Ví dụ: Switch tầng 2"></div>
+            <div class="form-group"><label>Địa chỉ IP</label><input type="text" id="devIp" placeholder="192.168.120.XX"></div>
+            <div class="form-group">
+                <label>Loại danh mục</label>
+                <select id="devType">
+                    <option value="camera">Camera IP</option>
+                    <option value="switch">Bộ chuyển mạch (Switch)</option>
+                    <option value="printer">Máy in / Scan</option>
+                    <option value="faceid">Máy chấm công FaceID</option>
+                    <option value="other">Thiết bị ngoại vi khác</option>
+                </select>
+            </div>
+            <button class="btn-submit" onclick="addDeviceFromForm()"><i class="fa-solid fa-plus"></i> Cấu hình mới</button>
+        </div>
+
+        <div class="grid-container">
+            <div class="column-section">
+                <div class="column-header">PHÂN KHU THIẾT BỊ SỐ 01 <span class="refresh-status" id="timerBadge1">Auto: 05:00</span></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên / Loại</th>
+                            <th>Địa chỉ IP</th>
+                            <th>Kết nối</th>
+                            <th style="width: 50px; text-align: center;">Quản trị</th>
+                        </tr>
+                    </thead>
+                    <tbody id="col1TableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="column-section">
+                <div class="column-header">PHÂN KHU THIẾT BỊ SỐ 02 <span class="refresh-status" id="timerBadge2">Auto: 05:00</span></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên / Loại</th>
+                            <th>Địa chỉ IP</th>
+                            <th>Kết nối</th>
+                            <th style="width: 50px; text-align: center;">Quản trị</th>
+                        </tr>
+                    </thead>
+                    <tbody id="col2TableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASS = "admin123";
+        let isAdminLoggedIn = false;
+        let refreshInterval = 300; 
+        let countdownTimer;
+
+        const deviceIcons = { camera: 'fa-video', switch: 'fa-server', printer: 'fa-print', faceid: 'fa-user-clock', other: 'fa-laptop-code' };
+        const deviceTypeNames = { camera: 'Camera IP', switch: 'Switch', printer: 'Máy in mạng', faceid: 'Máy Face ID', other: 'Thiết bị khác' };
+
+        const sampleDb = [
+            { id: 1, name: "Camera Cổng Chính", ip: "192.168.120.50", type: "camera", status: "online" },
+            { id: 2, name: "Camera Phòng Làm Việc", ip: "192.168.120.51", type: "camera", status: "online" },
+            { id: 3, name: "Switch Cisco Tầng 1", ip: "192.168.120.10", type: "switch", status: "online" },
+            { id: 4, name: "Máy in mã vạch kho", ip: "192.168.120.7", type: "printer", status: "online" },
+            { id: 5, name: "FaceID Cửa Ra Vào", ip: "192.168.120.22", type: "faceid", status: "online" },
+            { id: 6, name: "Camera Bãi Xe Ô Tô", ip: "192.168.120.55", type: "camera", status: "online" }
+        ];
+        if (!localStorage.getItem("device_database")) {
+            localStorage.setItem("device_database", JSON.stringify(sampleDb));
+        }
+
+        function formatTime(seconds) {
+            let m = Math.floor(seconds / 60); let s = seconds % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startAutoPingCheck() {
+            let timeLeft = refreshInterval;
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                let txt = `Quét lại sau: ${formatTime(timeLeft)}`;
+                document.getElementById("timerBadge1").innerText = txt;
+                document.getElementById("timerBadge2").innerText = txt;
+                
+                if(timeLeft <= 0) {
+                    timeLeft = refreshInterval;
+                    let devices = JSON.parse(localStorage.getItem("device_database")) || [];
+                    devices.forEach(d => { d.status = Math.random() > 0.05 ? 'online' : 'offline'; });
+                    localStorage.setItem("device_database", JSON.stringify(devices));
+                    renderBalancedGrid();
+                }
+            }, 1000);
+        }
+
+        function handleAuth() {
+            const btn = document.getElementById("authBtn");
+            if (!isAdminLoggedIn) {
+                let pass = prompt("Nhập mã pin quyền quản trị:");
+                if (pass === ADMIN_PASS) {
+                    isAdminLoggedIn = true;
+                    btn.innerHTML = '<i class="fa-solid fa-unlock"></i> Thoát Admin';
+                    btn.className = "btn-auth logged";
+                } else if (pass !== null) alert("Sai mã bảo mật!");
+            } else {
+                isAdminLoggedIn = false;
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Hệ thống Admin';
+                btn.className = "btn-auth";
+            }
+            renderBalancedGrid();
+        }
+
+        function renderBalancedGrid() {
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            const tbody1 = document.getElementById("col1TableBody");
+            const tbody2 = document.getElementById("col2TableBody");
+            
+            tbody1.innerHTML = ""; tbody2.innerHTML = "";
+            document.getElementById("adminPanel").style.display = isAdminLoggedIn ? "flex" : "none";
+
+            let onlineCount = devices.filter(d => d.status === 'online').length;
+            document.getElementById("total-summary").innerHTML = `Tổng thiết bị: <b>${devices.length}</b> | <span style="color:#22c55e;">Hoạt động: ${onlineCount}</span> | <span style="color:#ef4444;">Mất mạng: ${devices.length - onlineCount}</span>`;
+
+            devices.forEach((dev, index) => {
+                let icon = deviceIcons[dev.type] || 'fa-network-wired';
+                let badgeClass = dev.status === 'online' ? 'online' : 'offline';
+                let badgeText = dev.status === 'online' ? '● Active' : '▲ Down';
+                
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <div class="device-meta">
+                            <i class="fa-solid ${icon} device-icon"></i>
+                            <div style="font-weight:bold; color:#1e293b;">${dev.name}</div>
+                        </div>
+                    </td>
+                    <td style="font-family:monospace; font-weight:bold; color:#475569;">${dev.ip}</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td style="text-align:center;">
+                        <div class="menu-container">
+                            <button class="btn-trigger" onclick="toggleDropdown(event, ${dev.id})">•••</button>
+                            <div class="dropdown-menu" id="dropdown-${dev.id}">
+                                <a class="dropdown-item item-webgui" href="http://${dev.ip}" target="_blank" onclick="closeAllDropdowns()">
+                                    <i class="fa-solid fa-sliders"></i> Giao diện Web GUI
+                                </a>
+                                <button class="dropdown-item item-ping" onclick="quickRowPing('${dev.ip}')">
+                                    <i class="fa-solid fa-terminal"></i> Chạy Ping Test
+                                </button>
+                                ${isAdminLoggedIn ? `
+                                    <button class="dropdown-item item-edit" onclick="editDevice(${dev.id})"><i class="fa-solid fa-pen"></i> Chỉnh sửa IP</button>
+                                    <button class="dropdown-item item-delete" onclick="deleteDevice(${dev.id})"><i class="fa-solid fa-trash"></i> Gỡ thiết bị</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                if (index % 2 === 0) {
+                    tbody1.appendChild(tr);
+                } else {
+                    tbody2.appendChild(tr);
+                }
+            });
+        }
+
+        function toggleDropdown(event, id) {
+            event.stopPropagation();
+            const targetMenu = document.getElementById(`dropdown-${id}`);
+            const isOpen = targetMenu.classList.contains("show");
+            
+            closeAllDropdowns();
+            if (!isOpen) {
+                targetMenu.classList.add("show");
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.remove("show"));
+        }
+
+        document.addEventListener("click", closeAllDropdowns);
+
+        function addDeviceFromForm() {
+            const name = document.getElementById("devName").value.trim();
+            const ip = document.getElementById("devIp").value.trim();
+            const type = document.getElementById("devType").value;
+
+            if(!name || !ip) { alert("Không để trống dữ liệu!"); return; }
+
+            const devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            const newId = devices.length > 0 ? Math.max(...devices.map(d => d.id)) + 1 : 1;
+            devices.push({ id: newId, name, ip, type, status: 'online' });
+            localStorage.setItem("device_database", JSON.stringify(devices));
+            
+            document.getElementById("devName").value = ""; document.getElementById("devIp").value = "";
+            renderBalancedGrid();
+        }
+
+        function editDevice(id) {
+            let devices = JSON.parse(localStorage.getItem("device_database")) || [];
+            let dev = devices.find(d => d.id === id);
+            if(!dev) return;
+            let n = prompt("Tên mới:", dev.name); let i = prompt("IP mới:", dev.ip);
+            if(n && i) { dev.name = n; dev.ip = i; localStorage.setItem("device_database", JSON.stringify(devices)); renderBalancedGrid(); }
+        }
+
+        function deleteDevice(id) {
+            if(confirm("Xác nhận xóa khỏi danh sách giám sát mạng?")) {
+                let devices = JSON.parse(localStorage.getItem("device_database")) || [];
+                devices = devices.filter(d => d.id !== id);
+                localStorage.setItem("device_database", JSON.stringify(devices));
+                renderBalancedGrid();
+            }
+        }
+
+        function executeManualPing() {
+            const target = document.getElementById("pingTargetInput").value.trim();
+            if(!target) { alert("Nhập IP đích cần kiểm tra!"); return; }
+            runPingSimulation(target);
+        }
+
+        function quickRowPing(ip) {
+            document.getElementById("pingTargetInput").value = ip;
+            runPingSimulation(ip);
+            closeAllDropdowns();
+        }
+
+        function runPingSimulation(target) {
+            const consoleBox = document.getElementById("pingConsoleOutput");
+            const packetCount = parseInt(document.getElementById("pingCount").value);
+            consoleBox.innerHTML = `Mạng hệ thống phát lệnh PING tới ${target} với 32 bytes dữ liệu...`;
+            
+            let currentLine = 0;
+            let logLines = `PING Khởi chạy hệ thống đến host: ${target}\n`;
+            let isOnline = !target.endsWith(".99");
+            let ttl = Math.floor(Math.random() * 5) + 60;
+            let totalTime = 0;
+
+            function printLine() {
+                if (currentLine < packetCount) {
+                    if (isOnline) {
+                        let t = Math.floor(Math.random() * 4) + 1;
+                        totalTime += t;
+                        logLines += `Phản hồi từ ${target}: bytes=32 time=${t}ms TTL=${ttl}\n`;
+                    } else {
+                        logLines += `Yêu cầu kiểm tra gói tin bị hết hạn (Request timed out).\n`;
+                    }
+                    consoleBox.innerHTML = logLines;
+                    consoleBox.scrollTop = consoleBox.scrollHeight;
+                    currentLine++;
+                    setTimeout(printLine, 100);
+                } else {
+                    if (isOnline) {
+                        logLines += `\nThống kê truyền dẫn: Đã gửi = ${packetCount}, Nhận về = ${packetCount}, Mất mát = 0% loss.\nThời gian trễ trung bình = ${Math.round(totalTime/packetCount)}ms.`;
+                    } else {
+                        logLines += `\nThống kê truyền dẫn: Đã gửi = ${packetCount}, Thất bại hoàn toàn (100% loss).`;
+                    }
+                    consoleBox.innerHTML = logLines;
+                }
+            }
+            setTimeout(printLine, 300);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderBalancedGrid();
+            startAutoPingCheck();
+        });
+    </script>
+</body>
+</html>
