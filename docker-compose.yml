@@ -1,7 +1,6 @@
-
 services:
   frontend:
-    build: ./frontend
+    image: nguyentho1907/oa-app:latest
     container_name: oa-frontend
     restart: unless-stopped
     ports:
